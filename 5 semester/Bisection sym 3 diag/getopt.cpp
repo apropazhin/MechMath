@@ -5,7 +5,7 @@
 Params get_options(int argc, char *argv[]) {
 	int i;
 	Params par;
-	while ((i = getopt(argc, argv, "k:s:f:i:o:v")) != -1) {
+	while ((i = getopt(argc, argv, "k:s:f:l:r:i:o:v")) != -1) {
 		switch ((char)i) {
 		case 'k': {
 			for (size_t j = 0; j < strlen(optarg); j++)
@@ -25,6 +25,28 @@ Params get_options(int argc, char *argv[]) {
 			par.size = strtol(optarg, &next, 10);
 			break;
 		}
+		case 'l': {
+			char *next;
+			par.left = strtod(optarg, &next);
+			if (*optarg == '\0') {
+				throw MyException(5, "Incorrect format of key!");
+			}
+			if (next == optarg || *next != '\0') {
+				throw MyException(5, "Incorrect format of key!");
+			}
+			break;
+		}
+		case 'r': {
+			char *next;
+			par.right = strtod(optarg, &next);
+			if (*optarg == '\0') {
+				throw MyException(5, "Incorrect format of key!");
+			}
+			if (next == optarg || *next != '\0') {
+				throw MyException(5, "Incorrect format of key!");
+			}
+			break;
+		}
 		case 'f': {
 			par.formula = optarg;
 			break;
@@ -41,7 +63,6 @@ Params get_options(int argc, char *argv[]) {
 			par.flag = true;
 			break;
 		}
-
 		}
 	}
 	return par;

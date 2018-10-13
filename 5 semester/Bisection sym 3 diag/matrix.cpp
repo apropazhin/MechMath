@@ -1,6 +1,5 @@
 #include "matrix.h"
 #include "MyException.h"
-#define eps 1e-10
 
 Matrix::Matrix(int _size) {
 	size = _size;
@@ -50,8 +49,8 @@ Matrix::Matrix(const char *name) {
 
 void Matrix::init(const char *name) {
 	FILE *fin;
-    fin = fopen(name, "r");
-    if (!fin) throw MyException(1, "Can't open file!");
+	fin = fopen(name, "r");
+	if (!fin) throw MyException(1, "Can't open file!");
 	else
 	{
 		if (fscanf(fin, "%d", &size) != 1)
@@ -105,130 +104,131 @@ Matrix Matrix::operator*(const Matrix &M) {
 	return prod;
 }
 
-Matrix Matrix::inverse(Matrix inv, bool fl) {
-	for (int i = 0; i < size; i++)
-		for (int j = 0; j < size; j++)
-			if (i == j) inv.data[i * size + j] = 1;
-			else inv.data[i * size + j] = 0;
-	if (fl) {
-		std::cout << "inv:\n";
-		inv.print(5);
-	}
+void Matrix::diag() {
 
-	for (int i = 0; i < size; i++)
+	for (int i = 1; i < size - 1; i++)
 	{
-		double tmp1 = 0.0;
-		for (int j = i + 1; j < size; j++)
-			tmp1 += data[j * size + i] * data[j * size + i]; //(12)
-
-		double tmp2 = sqrt(tmp1 + data[i * size + i] * data[i * size + i]); //(13)
-
-        if (tmp2 < eps)
-			throw MyException(7, "Can't invert - matrix is deteriorated!");
-
-		data[i * size + i] -= tmp2; //(14)
-
-		if (fl) {
-            std::cout << "1. A:\ni = "<< i << "\n";
-			print(5);
-		}
-
-		tmp1 = sqrt(tmp1 + data[i * size + i] * data[i * size + i]); //(15)
-
-		if (tmp1 < eps)
-		{
-			data[i * size + i] += tmp2;
-			continue;
-		}
-
-		for (int j = i; j < size; j++)
-            data[j * size + i] = data[j * size + i]/(double)tmp1; //(16)
-
-		if (fl) {
-            std::cout << "2. A:\ni = "<< i << "\n";
-			print(5);
-		}
-
-		for (int k = i + 1; k < size; k++)
-		{
-			tmp1 = 0.0;
-			for (int j = i; j < size; j++)
-				tmp1 += data[j * size + i] * data[j * size + k];
-
-			tmp1 *= 2.0; //from formula
-			for (int j = i; j < size; j++)
-				data[j * size + k] -= tmp1 * data[j * size + i];
-		}
-		if (fl) {
-            std::cout << "3. A:\ni = "<< i << "\n";
-			print(5);
-		}
-
-		for (int k = 0; k < size; k++)
-		{
-			tmp1 = 0.0;
-			for (int j = i; j < size; j++)
-				tmp1 += data[j * size + i] * inv.data[k * size + j];
-
-			tmp1 *= 2.0; //from formula
-			for (int j = i; j < size; j++)
-				inv.data[k * size + j] -= tmp1 * data[j * size + i];
-		}
-		if (fl) {
-            std::cout << "4. inv:\ni = "<< i << "\n";
-			inv.print(5);
-		}
-
-		data[i * size + i] = tmp2; //on diagonal - R
-	}
-
-	if (fl) {
-        std::cout << "0. A:\n";
-		print(5);
-        std::cout << "0. inv:\n";
-		inv.print(5);
-	}
-
-	for (int i = 0; i < size; ++i)
 		for (int j = i + 1; j < size; j++)
 		{
-			double tmp1 = inv.data[i * size + j];
-			inv.data[i * size + j] = inv.data[j * size + i];
-			inv.data[j * size + i] = tmp1;
-		}//Transpose Q
+			double x = data[i * size + i - 1];
+			double y = data[j * size + i - 1];
 
-	if (fl) {
-		std::cout << "A:\n";
-		print(5);
-		std::cout << "inv:\n";
-		inv.print(5);
+			if (abs(y) < eps)
+				continue;
+
+			double r = sqrt(x * x + y * y);
+
+			if (r < eps)
+				continue;
+
+			double cosPhi = x / r;
+			double sinPhi = -y / r;
+
+			data[i * size + i - 1] = r;
+			data[(i - 1) * size + i] = r;
+			data[j * size + i - 1] = 0.0;
+			data[(i - 1) * size + j] = 0.0;
+
+			for (int k = i + 1; k < size; k++)
+			{
+				if (k == j)
+					continue;
+
+				x = data[i * size + k];
+				y = data[j * size + k];
+				data[k * size + i] = data[i * size + k] = x * cosPhi - y * sinPhi;
+				data[k * size + j] = data[j * size + k] = x * sinPhi + y * cosPhi;
+			}
+
+			x = data[i * size + i];
+			y = data[j * size + j];
+			r = data[i * size + j];
+			double s = data[j * size + i];
+			double a_ii = x * cosPhi - s * sinPhi;
+			double a_ji = x * sinPhi + s * cosPhi;
+			double a_ij = r * cosPhi - y * sinPhi;
+			double a_jj = r * sinPhi + y * cosPhi;
+
+			data[i * size + i] = a_ii * cosPhi - a_ij * sinPhi;
+			data[j * size + i] = a_ii * sinPhi + a_ij * cosPhi;
+			data[i * size + j] = data[j * size + i];
+			data[j * size + j] = a_ji * sinPhi + a_jj * cosPhi;
+		}
 	}
-
-	for (int k = 0; k < size; k++)
-		for (int i = size - 1; i >= 0; i--)
-		{
-			double tmp1 = inv.data[i * size + k];
-			for (int j = i + 1; j < size; j++)
-				tmp1 -= data[i * size + j] * inv.data[j * size + k];
-			inv.data[i * size + k] = tmp1 / data[i * size + i];
-		}//Reverse Gauss
-
-	if (fl) {
-		std::cout << "0. A:\n";
-		print(5);
-		std::cout << "0. inv:\n";
-		inv.print(5);
-	}
-
-	return inv;
 }
 
-double norm(Matrix A, Matrix inv) {
-	double err = 0;
-	Matrix E = A * inv;
-	for (int i = 0; i < A.size; i++)
-		err += E.data[i*E.size + i] - 1;
-	return err;
+int Matrix::alter(double eig_val) {
+
+	double x = data[0 * size + 0] - eig_val;
+	double y = 1.0;
+	int count = x < eps;
+
+	for (int i = 1; i < size; i++)
+	{
+		double a_k = data[i * size + i] - eig_val;
+		double b_k1 = data[i * size + i - 1];
+
+		double tmp = abs(b_k1 * b_k1 * y);
+
+		if (abs(x) > tmp)
+			tmp = abs(x);
+
+		if (tmp < eps)
+			tmp = 1e-15;
+
+		double gamma = 1e15 / tmp;
+		double u = gamma * (a_k * x - b_k1 * b_k1 * y);
+		double v = gamma * x;
+
+		if (u * x < eps)
+			count++;
+
+		x = u;
+		y = v;
+	}
+
+	return count;
+}
+
+int Matrix::findEigenvalues(double left, double right, double* values, bool fl) {
+	
+	diag();
+	right += eps;
+	left -= eps;
+
+	int count = alter(right) - alter(left);
+
+	if (count == 0)
+		return 0;
+
+	int i = 0;
+	int beforeLeftBorderCount = alter(left);
+	double currentLeft = left, currentRight = right, currentMiddle;
+
+	while (i < count)
+	{
+		while (currentRight - currentLeft > eps)
+		{
+			currentMiddle = 0.5 * (currentLeft + currentRight);
+
+			if (alter(currentMiddle) < i + 1 + beforeLeftBorderCount)
+				currentLeft = currentMiddle;
+			else
+				currentRight = currentMiddle;
+		}
+
+		currentMiddle = 0.5 * (currentLeft + currentRight);
+		int new_count = alter(currentRight) - alter(currentLeft);
+
+		for (int j = 0; j < new_count; j++)
+			values[i + j] = currentMiddle;
+
+		i += new_count;
+
+		currentLeft = currentMiddle;
+		currentRight = right;
+	}
+	return count;
 }
 
 void Matrix::test_1(int size) {

@@ -5,6 +5,8 @@
 #include <fstream>
 #include <math.h>
 
+#define eps 1e-10
+
 class Matrix {
 private:
 	int size;
@@ -21,8 +23,10 @@ public:
 	void init(const char*);
 	void print(int key) const;
 	void print(int key, const char* name) const;
-	Matrix inverse(Matrix, bool);
-	friend double norm(Matrix, Matrix);
+	void diag();
+	int alter(double);
+	int findEigenvalues(double, double, double*, bool);
+	//friend double norm(Matrix, Matrix);
 	void test_1(int);
 	void test_2(int);
 };
