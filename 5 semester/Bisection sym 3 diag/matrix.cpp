@@ -121,8 +121,8 @@ void Matrix::diag() {
 			if (r < eps)
 				continue;
 
-			double cosPhi = x / r;
-			double sinPhi = -y / r;
+			double cos = x / r;
+			double sin = -y / r;
 
 			data[i * size + i - 1] = r;
 			data[(i - 1) * size + i] = r;
@@ -136,30 +136,32 @@ void Matrix::diag() {
 
 				x = data[i * size + k];
 				y = data[j * size + k];
-				data[k * size + i] = data[i * size + k] = x * cosPhi - y * sinPhi;
-				data[k * size + j] = data[j * size + k] = x * sinPhi + y * cosPhi;
+				data[k * size + i] = x * cos - y * sin;
+				data[i * size + k] = x * cos - y * sin;
+				data[k * size + j] = x * sin + y * cos;
+				data[j * size + k] = x * sin + y * cos;
 			}
 
 			x = data[i * size + i];
 			y = data[j * size + j];
 			r = data[i * size + j];
 			double s = data[j * size + i];
-			double a_ii = x * cosPhi - s * sinPhi;
-			double a_ji = x * sinPhi + s * cosPhi;
-			double a_ij = r * cosPhi - y * sinPhi;
-			double a_jj = r * sinPhi + y * cosPhi;
+			double a_ii = x * cos - s * sin;
+			double a_ji = x * sin + s * cos;
+			double a_ij = r * cos - y * sin;
+			double a_jj = r * sin + y * cos;
 
-			data[i * size + i] = a_ii * cosPhi - a_ij * sinPhi;
-			data[j * size + i] = a_ii * sinPhi + a_ij * cosPhi;
+			data[i * size + i] = a_ii * cos - a_ij * sin;
+			data[j * size + i] = a_ii * sin + a_ij * cos;
 			data[i * size + j] = data[j * size + i];
-			data[j * size + j] = a_ji * sinPhi + a_jj * cosPhi;
+			data[j * size + j] = a_ji * sin + a_jj * cos;
 		}
 	}
 }
 
 int Matrix::alter(double eig_val) {
 
-	double x = data[0 * size + 0] - eig_val;
+	double x = data[0] - eig_val;
 	double y = 1.0;
 	int count = x < eps;
 
@@ -191,7 +193,7 @@ int Matrix::alter(double eig_val) {
 }
 
 int Matrix::findEigenvalues(double left, double right, double* values, bool fl) {
-	
+
 	diag();
 	right += eps;
 	left -= eps;
