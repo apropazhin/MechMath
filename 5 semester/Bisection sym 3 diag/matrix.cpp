@@ -160,31 +160,37 @@ void Matrix::diag() {
 }
 
 int Matrix::alter(double eig_val) {
-
+	//p. 143
+	//step 1
 	double x = data[0] - eig_val;
 	double y = 1.0;
-	int count = x < eps;
+	int count = x < eps; 
 
+	//step 2
 	for (int i = 1; i < size; i++)
 	{
-		double a_k = data[i * size + i] - eig_val;
-		double b_k1 = data[i * size + i - 1];
+		//a
+		double a = data[i * size + i] - eig_val; 
+		double b = data[i * size + i - 1];
 
-		double tmp = abs(b_k1 * b_k1 * y);
+		//b
+		double max = abs(b * b * y);
 
-		if (abs(x) > tmp)
-			tmp = abs(x);
+		if (abs(x) > max)
+			max = abs(x);
 
-		if (tmp < eps)
-			tmp = 1e-15;
+		if (max < eps)
+			max = 1e-15;
 
-		double gamma = 1e15 / tmp;
-		double u = gamma * (a_k * x - b_k1 * b_k1 * y);
-		double v = gamma * x;
+		double g = 1e15 / max;
+		//c
+		double u = g * (a * x - b * b * y); 
+		double v = g * x;
 
+		//d
 		if (u * x < eps)
 			count++;
-
+		//e
 		x = u;
 		y = v;
 	}
@@ -195,6 +201,11 @@ int Matrix::alter(double eig_val) {
 int Matrix::findEigenvalues(double left, double right, double* values, bool fl) {
 
 	diag();
+	if (fl) {
+		std::cout << "Matrix diag:\n";
+		print(5);
+	}
+
 	right += eps;
 	left -= eps;
 
@@ -225,6 +236,21 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 		for (int j = 0; j < new_count; j++)
 			values[i + j] = currentMiddle;
 
+		if (fl) {
+			std::cout << "Eigenvalues:\n";
+			if (count > 6) {
+				for (int i = 0; i < 5; i++)
+					std::cout << values[i] << "\t";
+
+				std::cout << "...\t" << values[count - 1];
+				std::cout << "\n";
+			}
+			else {
+				for (int i = 0; i < count; i++)
+					std::cout << values[i] << "\t";
+				std::cout << "\n";
+			}
+		}
 		i += new_count;
 
 		currentLeft = currentMiddle;
