@@ -106,10 +106,8 @@ Matrix Matrix::operator*(const Matrix &M) {
 
 void Matrix::diag() {
 
-	for (int i = 1; i < size - 1; i++)
-	{
-		for (int j = i + 1; j < size; j++)
-		{
+	for (int i = 1; i < size - 1; i++) {
+		for (int j = i + 1; j < size; j++) {
 			double x = data[i * size + i - 1];
 			double y = data[j * size + i - 1];
 
@@ -121,16 +119,14 @@ void Matrix::diag() {
 			if (r < eps)
 				continue;
 
-			double cos = x / r;
-			double sin = -y / r;
+			double cos = x / r, sin = -y / r;
 
 			data[i * size + i - 1] = r;
 			data[(i - 1) * size + i] = r;
 			data[j * size + i - 1] = 0.0;
 			data[(i - 1) * size + j] = 0.0;
 
-			for (int k = i + 1; k < size; k++)
-			{
+			for (int k = i + 1; k < size; k++) {
 				if (k == j)
 					continue;
 
@@ -142,19 +138,16 @@ void Matrix::diag() {
 				data[j * size + k] = x * sin + y * cos;
 			}
 
-			x = data[i * size + i];
-			y = data[j * size + j];
-			r = data[i * size + j];
-			double s = data[j * size + i];
-			double a_ii = x * cos - s * sin;
-			double a_ji = x * sin + s * cos;
-			double a_ij = r * cos - y * sin;
-			double a_jj = r * sin + y * cos;
+			double a = data[i * size + i], b = data[i * size + j], c = data[j * size + i], d = data[j * size + j];
+			double b_ii = a * cos - b * sin;
+			double b_ji = a * sin + b * cos;
+			double b_ij = c * cos - d * sin;
+			double b_jj = c * sin + d * cos;
 
-			data[i * size + i] = a_ii * cos - a_ij * sin;
-			data[j * size + i] = a_ii * sin + a_ij * cos;
+			data[i * size + i] = b_ii * cos - b_ij * sin;
+			data[j * size + i] = b_ii * sin + b_ij * cos;
 			data[i * size + j] = data[j * size + i];
-			data[j * size + j] = a_ji * sin + a_jj * cos;
+			data[j * size + j] = b_ji * sin + b_jj * cos;
 		}
 	}
 }
@@ -164,13 +157,13 @@ int Matrix::alter(double eig_val) {
 	//step 1
 	double x = data[0] - eig_val;
 	double y = 1.0;
-	int count = x < eps; 
+	int count = x < eps;
 
 	//step 2
 	for (int i = 1; i < size; i++)
 	{
 		//a
-		double a = data[i * size + i] - eig_val; 
+		double a = data[i * size + i] - eig_val;
 		double b = data[i * size + i - 1];
 
 		//b
@@ -184,7 +177,7 @@ int Matrix::alter(double eig_val) {
 
 		double g = 1e15 / max;
 		//c
-		double u = g * (a * x - b * b * y); 
+		double u = g * (a * x - b * b * y);
 		double v = g * x;
 
 		//d
@@ -218,10 +211,8 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 	int beforeLeftBorderCount = alter(left);
 	double currentLeft = left, currentRight = right, currentMiddle;
 
-	while (i < count)
-	{
-		while (currentRight - currentLeft > eps)
-		{
+	while (i < count) {
+		while (currentRight - currentLeft > eps) {
 			currentMiddle = 0.5 * (currentLeft + currentRight);
 
 			if (alter(currentMiddle) < i + 1 + beforeLeftBorderCount)
@@ -233,24 +224,13 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 		currentMiddle = 0.5 * (currentLeft + currentRight);
 		int new_count = alter(currentRight) - alter(currentLeft);
 
-		for (int j = 0; j < new_count; j++)
+		for (int j = 0; j < new_count; j++) {
 			values[i + j] = currentMiddle;
-
-		if (fl) {
-			std::cout << "Eigenvalues:\n";
-			if (count > 6) {
-				for (int i = 0; i < 5; i++)
-					std::cout << values[i] << "\t";
-
-				std::cout << "...\t" << values[count - 1];
-				std::cout << "\n";
-			}
-			else {
-				for (int i = 0; i < count; i++)
-					std::cout << values[i] << "\t";
-				std::cout << "\n";
+			if (fl) {
+				std::cout << "New eigenvalue:\t" << values[i + j] << "\n";
 			}
 		}
+
 		i += new_count;
 
 		currentLeft = currentMiddle;
