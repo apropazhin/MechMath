@@ -28,7 +28,6 @@ public:
 	int findEigenvalues(double, double, double*, bool);
 	friend double norm(const Matrix &A, double *values, int _size);
 	friend double dist(const Matrix &A, double *values, int _size);
-	//friend double norm(Matrix, Matrix);
 	void test_1(int);
 	void test_2(int);
 };

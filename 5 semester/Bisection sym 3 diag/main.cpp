@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 				A.init(par.size);
 				if (strcmp("1", par.formula) == 0) {
 					std::cout << "Test 1\n";
-                    A.test_1(par.size);
+					A.test_1(par.size);
 				}
 				else if (strcmp("2", par.formula) == 0) {
 					std::cout << "Test 2\n";
@@ -34,15 +34,15 @@ int main(int argc, char *argv[]) {
 			}
 			else throw MyException(9, "Incorrect input");
 			std::cout << "Matrix:\n";
-            A.print(5);
-            values = new double[A.getSize()];
-            Matrix B;
-            B=A;
-            //timespec mt1, mt2;
-            //clock_gettime(CLOCK_MONOTONIC, &mt1);
+			A.print(5);
+			values = new double[A.getSize()];
+			Matrix B;
+			B = A;
+			//timespec mt1, mt2;
+			//clock_gettime(CLOCK_MONOTONIC, &mt1);
 			int count_values = A.findEigenvalues(par.left, par.right, values, par.flag);
-            //clock_gettime(CLOCK_MONOTONIC, &mt2);
-            //double tt = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
+			//clock_gettime(CLOCK_MONOTONIC, &mt2);
+			//double tt = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
 
 			if (count_values > 0) {
 				if (par.out_name) {
@@ -81,13 +81,13 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else
-                std::cout << "Eigenvalues doesn't exist on this interval\n";
+				std::cout << "Eigenvalues doesn't exist on this interval\n";
 
-            double err = norm(B, values, count_values);
-            std::cout << "Norm of residual: " << err << std::endl;
-            err = dist(B, values, count_values);
-            std::cout << "Distance: " << err << std::endl;
-            //std::cout << "Time: " << tt << " sec" << std::endl;
+			double err = norm(B, values, count_values);
+			std::cout << "Norm of residual: " << err << std::endl;
+			err = dist(B, values, count_values);
+			std::cout << "Distance: " << err << std::endl;
+			//std::cout << "Time: " << tt << " sec" << std::endl;
 			if (values) delete[] values;
 		}
 	}

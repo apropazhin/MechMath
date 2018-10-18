@@ -161,21 +161,21 @@ int Matrix::alter(double eig_val) {
 
 	//step 2
 	for (int i = 1; i < size; i++)
-    {
+	{
 		//a
 		double a = data[i * size + i] - eig_val;
 		double b = data[i * size + i - 1];
 
-        //b
-        double max = fabs(b * b * y);
+		//b
+		double max = fabs(b * b * y);
 
-        if (fabs(x) > max)
-            max = fabs(x);
+		if (fabs(x) > max)
+			max = fabs(x);
 
 		if (max < eps)
-            max = 1e-15;
+			max = 1e-15;
 
-        double g = 1e5 / max;
+		double g = 1e5 / max;
 		//c
 		double u = g * (a * x - b * b * y);
 		double v = g * x;
@@ -185,88 +185,91 @@ int Matrix::alter(double eig_val) {
 			count++;
 		//e
 		x = u;
-        y = v;
+		y = v;
 	}
 
 	return count;
 }
 
 int Matrix::findEigenvalues(double left, double right, double* values, bool fl) {
-
+	//p. 140
 	diag();
 	if (fl) {
 		std::cout << "Matrix diag:\n";
 		print(5);
 	}
 
-    right += eps;
-    left -= eps;
+	right += eps;
+	left -= eps;
 
 	int count = alter(right) - alter(left);
 
 	if (count == 0)
 		return 0;
-
+	//p. 138
+	//1
 	int i = 0;
-	int beforeLeftBorderCount = alter(left);
-	double currentLeft = left, currentRight = right, currentMiddle;
+	int count_left = alter(left);
+	double cur_left = left, cur_right = right, cur_mid;
 
-    while (i < count) {
-		while (currentRight - currentLeft > eps) {
-			currentMiddle = 0.5 * (currentLeft + currentRight);
+	while (i < count) {
+		//2
+		while (cur_right - cur_left > eps) {
+			cur_mid = 0.5 * (cur_left + cur_right);
 
-			if (alter(currentMiddle) < i + 1 + beforeLeftBorderCount)
-				currentLeft = currentMiddle;
+			if (alter(cur_mid) < i + 1 + count_left)
+				cur_left = cur_mid;
 			else
-				currentRight = currentMiddle;
-		}
+				cur_right = cur_mid;
+		}//3
 
-		currentMiddle = 0.5 * (currentLeft + currentRight);
-		int new_count = alter(currentRight) - alter(currentLeft);
+		//4
+		cur_mid = 0.5 * (cur_left + cur_right);
+		int count_value = alter(cur_right) - alter(cur_left);
 
-		for (int j = 0; j < new_count; j++) {
-			values[i + j] = currentMiddle;
+		for (int j = 0; j < count_value; j++) {
+			values[i + j] = cur_mid;
 			if (fl) {
 				std::cout << "New eigenvalue:\t" << values[i + j] << "\n";
 			}
 		}
 
-		i += new_count;
+		i += count_value;
 
-		currentLeft = currentMiddle;
-		currentRight = right;
+		cur_left = cur_mid;
+		cur_right = right;
 	}
 	return count;
 }
 
-double norm(const Matrix &A, double *values, int _size){
-    double res = 0;
-    for (int i = 0; i < _size; i++)
-        res += A.data[i*A.size + i] - values[i];
-    return res;
+double norm(const Matrix &A, double *values, int _size) {
+	double res = 0;
+	for (int i = 0; i < _size; i++)
+		res += A.data[i*A.size + i] - values[i];
+	return res;
 }
 
-double dist(const Matrix &A, double *values, int _size){
-    double res1 = 0;
-    for (int i = 0; i < A.size; i++)
-        for (int j = 0; j < A.size; j++)
-            res1 = res1 + (A.data[i*A.size + j])*(A.data[i*A.size + j]);
-    double res2 = 0;
-    for (int i = 0; i < _size; i++)
-        res2 = res2 + values[i]*values[i];
-    return fabs(sqrt(res1)-sqrt(res2));
+double dist(const Matrix &A, double *values, int _size) {
+	double res1 = 0;
+	for (int i = 0; i < A.size; i++)
+		for (int j = 0; j < A.size; j++)
+			res1 = res1 + (A.data[i*A.size + j])*(A.data[i*A.size + j]);
+	double res2 = 0;
+	for (int i = 0; i < _size; i++)
+		res2 = res2 + values[i] * values[i];
+	return fabs(sqrt(res1) - sqrt(res2));
 }
 
 void Matrix::test_1(int size) {
-    for (int i = 0; i < size-1; i++) {
-        for (int j = 0; j < size-1; j++) {
-            if (i == j) data[i * size + j] = 1;
-            else data[i * size + j] = 0;
+	for (int i = 0; i < size - 1; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (i == j) data[i * size + j] = 1;
+			else data[i * size + j] = 0;
 		}
 
-        for (int j = 0; j < size; j++) {
-            data[(size-1)*size + j] = j+1;
-            data[size-1 + j*size] = j+1;
+		for (int j = 0; j < size; j++) {
+			data[(size - 1)*size + j] = j + 1;
+			data[size - 1 + j * size] = j + 1;
 		}
 	}
 }
