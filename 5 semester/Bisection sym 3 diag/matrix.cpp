@@ -161,21 +161,21 @@ int Matrix::alter(double eig_val) {
 
 	//step 2
 	for (int i = 1; i < size; i++)
-	{
+    {
 		//a
 		double a = data[i * size + i] - eig_val;
 		double b = data[i * size + i - 1];
 
-		//b
-		double max = abs(b * b * y);
+        //b
+        double max = fabs(b * b * y);
 
-		if (abs(x) > max)
-			max = abs(x);
+        if (fabs(x) > max)
+            max = fabs(x);
 
 		if (max < eps)
-			max = 1e-15;
+            max = 1e-15;
 
-		double g = 1e15 / max;
+        double g = 1e5 / max;
 		//c
 		double u = g * (a * x - b * b * y);
 		double v = g * x;
@@ -185,7 +185,7 @@ int Matrix::alter(double eig_val) {
 			count++;
 		//e
 		x = u;
-		y = v;
+        y = v;
 	}
 
 	return count;
@@ -199,8 +199,8 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 		print(5);
 	}
 
-	right += eps;
-	left -= eps;
+    right += eps;
+    left -= eps;
 
 	int count = alter(right) - alter(left);
 
@@ -211,7 +211,7 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 	int beforeLeftBorderCount = alter(left);
 	double currentLeft = left, currentRight = right, currentMiddle;
 
-	while (i < count) {
+    while (i < count) {
 		while (currentRight - currentLeft > eps) {
 			currentMiddle = 0.5 * (currentLeft + currentRight);
 
@@ -239,14 +239,34 @@ int Matrix::findEigenvalues(double left, double right, double* values, bool fl) 
 	return count;
 }
 
+double norm(const Matrix &A, double *values, int _size){
+    double res = 0;
+    for (int i = 0; i < _size; i++)
+        res += A.data[i*A.size + i] - values[i];
+    return res;
+}
+
+double dist(const Matrix &A, double *values, int _size){
+    double res1 = 0;
+    for (int i = 0; i < A.size; i++)
+        for (int j = 0; j < A.size; j++)
+            res1 = res1 + (A.data[i*A.size + j])*(A.data[i*A.size + j]);
+    double res2 = 0;
+    for (int i = 0; i < _size; i++)
+        res2 = res2 + values[i]*values[i];
+    return fabs(sqrt(res1)-sqrt(res2));
+}
+
 void Matrix::test_1(int size) {
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < i; j++) {
-			data[i*size + j] = 0;
+    for (int i = 0; i < size-1; i++) {
+        for (int j = 0; j < size-1; j++) {
+            if (i == j) data[i * size + j] = 1;
+            else data[i * size + j] = 0;
 		}
-		data[i*size + i] = 1;
-		for (int j = i + 1; j < size; j++) {
-			data[i*size + j] = -1;
+
+        for (int j = 0; j < size; j++) {
+            data[(size-1)*size + j] = j+1;
+            data[size-1 + j*size] = j+1;
 		}
 	}
 }
