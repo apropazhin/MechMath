@@ -17,12 +17,15 @@ public:
 	Matrix& operator=(const Matrix&);
 	Matrix operator*(const Matrix&);
 	int getSize() const;
+	double* getData() const;
 	void init(int);
 	void init(const char*);
 	void print(int key) const;
 	void print(int key, const char* name) const;
-	Matrix inverse(Matrix, int, int, bool);
+	//Matrix inverse(Matrix, int, int, bool);
 	friend double norm(Matrix, Matrix);
 	void test_1(int);
 	void test_2(int);
 };
+
+void inverse(double*, double*, int, int, int, bool);

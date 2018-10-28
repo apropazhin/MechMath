@@ -12,74 +12,80 @@ int main(int argc, char *argv[]) {
 			Params par = get_options(argc, argv);
 			Matrix A, B, C;
 			if (par.formula && par.size) {
-                A.init(par.size);
+				A.init(par.size);
 				if (strcmp("1", par.formula) == 0) {
 					std::cout << "Test 1\n";
 					A.test_1(par.size);
 				}
-                else if (strcmp("2", par.formula) == 0) {
+				else if (strcmp("2", par.formula) == 0) {
 					std::cout << "Test 2\n";
 					A.test_2(par.size);
-                } else throw MyException(8, "No formula");
-                C.init(par.size);
+				}
+				else throw MyException(8, "No formula");
+				C.init(par.size);
 				B = A;
 			}
-            else if (par.in_name) {
-                std::cout << "Read from file\n";
+			else if (par.in_name) {
+				std::cout << "Read from file\n";
 				A.init(par.in_name);
 				B = A;
 				C.init(A.getSize());
-            } else throw MyException(9, "Incorrect input");
-            std::cout << "Matrix:\n";
-            A.print(5);
+			}
+			else throw MyException(9, "Incorrect input");
+			std::cout << "Matrix:\n";
+			A.print(5);
 
 			pthread_t *threads;
 			threads = new pthread_t[par.threads];
 			Threads *pa;
 			pa = new Threads[par.threads];
 
-			for (int i = 0; i < par.threads; i++)
-			{
-				pa[i].A = B;
-				pa[i].B = C;
+			for (int i = 0; i < par.threads; i++) {
+				pa[i].a = B.getData();
+				pa[i].b = C.getData();
+				pa[i].size = A.getSize();
 				pa[i].my_rank = i;
 				pa[i].threads = par.threads;
 				pa[i].flag = par.flag;
 			}
 
+			//timespec mt1, mt2;
+			//clock_gettime(CLOCK_MONOTONIC, &mt1);
+
 			for (int i = 0; i < par.threads; i++)
-				if (pthread_create(threads+i, 0, inv_t, pa+i))
+				if (pthread_create(threads + i, 0, inv_t, pa + i))
 				{
-					delete[] threads;
-					delete[] pa;
+					if (threads) delete[] threads;
+					if (pa) delete[] pa;
 					throw  MyException(i, "Can't create thread");
 				}
 			for (int i = 0; i < par.threads; i++)
 				if (pthread_join(threads[i], 0))
 				{
-					delete[] threads;
-					delete[] pa;
+					if (threads) delete[] threads;
+					if (pa) delete[] pa;
 					throw  MyException(i, "Can't wait thread");
 				}
 
-			//timespec mt1, mt2;
-			//clock_gettime(CLOCK_MONOTONIC_RAW, &mt1);
-			//C = B.inverse(C, par.flag);
-			//clock_gettime(CLOCK_MONOTONIC_RAW, &mt2);
+			//clock_gettime(CLOCK_MONOTONIC, &mt2);
 			//double tt = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
 
 			if (par.out_name) {
 				C.print(par.k, par.out_name);
 			}
-            else {
-                std::cout << "Inverse matrix:\n";
-                C.print(par.k);
-            }
+			else {
+				std::cout << "Inverse matrix:\n";
+				C.print(par.k);
+			}
 			double err = norm(A, C);
 			std::cout << "Norm of residual: " << err << std::endl;
-            //std::cout << "Time: " << tt << " sec" << std::endl;
-			delete[] threads;
-			delete[] pa;
+			//std::cout << "Total time: " << tt << " sec" << std::endl;
+			for (int i = 0; i < par.threads; i++)
+			{
+				//std::cout << "Time thread " << i << ": " << pa[i].time_t <<" sec" << std::endl; 
+			}
+			if (threads) delete[] threads;
+			if (pa) delete[] pa;
 		}
 	}
 	catch (MyException ex) {

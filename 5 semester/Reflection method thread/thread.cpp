@@ -1,17 +1,17 @@
 #include "thread.h"
+#include "matrix.h"
 
 void *inv_t(void *pa)
 {
 	Threads *args = (Threads*)pa;
-	//long int t1;
 
-	//t1 = get_time();
-	args->B = args->A.inverse(args->B, args->my_rank, args->threads, args->flag);
-	//InvMatrix(arg->n, arg->a, arg->x, arg->my_rank, arg->total_threads);
-	//t1 = get_time() - t1;
+	//timespec mt1, mt2;
+	//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID, &mt1);
+	inverse(args->a, args->b, args->size, args->my_rank, args->threads, args->flag);
+	//clock_gettime(CLOCK_PROCESS_CPUTIME_ID, CLOCK_THREAD_CPUTIME_ID, &mt2);
 
 	pthread_mutex_lock(&total_mutex);
-	//thread_time += t1;
+	//args->time_t = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
 	pthread_mutex_unlock(&total_mutex);
 }
 
