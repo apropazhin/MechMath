@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
 		else {
 			Params par = get_options(argc, argv);
 			Matrix A, B, C;
+			if (!par.threads) throw MyException(13, "No threads");
 			if (par.formula && par.size) {
 				A.init(par.size);
 				if (strcmp("1", par.formula) == 0) {
@@ -53,15 +54,13 @@ int main(int argc, char *argv[]) {
 			//clock_gettime(CLOCK_MONOTONIC, &mt1);
 
 			for (int i = 0; i < par.threads; i++)
-				if (pthread_create(threads + i, 0, inv_t, pa + i))
-				{
+				if (pthread_create(threads + i, 0, inv_t, pa + i)) {
 					if (threads) delete[] threads;
 					if (pa) delete[] pa;
 					throw  MyException(i, "Can't create thread");
 				}
 			for (int i = 0; i < par.threads; i++)
-				if (pthread_join(threads[i], 0))
-				{
+				if (pthread_join(threads[i], 0)) {
 					if (threads) delete[] threads;
 					if (pa) delete[] pa;
 					throw  MyException(i, "Can't wait thread");
@@ -79,10 +78,15 @@ int main(int argc, char *argv[]) {
 			}
 			double err = norm(A, C);
 			std::cout << "Norm of residual: " << err << std::endl;
+			err = 0;
+			for (int i = 0; i < par.threads; i++) {
+				err += pa[i].norm;
+			}
+			std::cout << "Norm of residual: " << err << std::endl;
+
 			//std::cout << "Total time: " << tt << " sec" << std::endl;
-			for (int i = 0; i < par.threads; i++)
-			{
-				//std::cout << "Time thread " << i << ": " << pa[i].time_t <<" sec" << std::endl; 
+			for (int i = 0; i < par.threads; i++) {
+				// std::cout << "Time thread " << i+1 << ": " << pa[i].time_t <<" sec" << std::endl;
 			}
 			if (threads) delete[] threads;
 			if (pa) delete[] pa;

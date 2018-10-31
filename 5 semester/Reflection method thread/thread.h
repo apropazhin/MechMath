@@ -10,12 +10,11 @@ public:
 	int my_rank;
 	int threads;
 	double time_t;
+	double norm;
 	bool flag;
 	Threads() :
-		a(NULL), b(NULL), size(0), my_rank(0), threads(0), time_t(0), flag(false) {}
+		a(NULL), b(NULL), size(0), my_rank(0), threads(0), time_t(0), norm(0), flag(false) {}
 };
 
 void *inv_t(void*);
 void synchronize(int);
-
-pthread_mutex_t total_mutex = PTHREAD_MUTEX_INITIALIZER;

@@ -29,3 +29,4 @@ public:
 };
 
 void inverse(double*, double*, int, int, int, bool);
+double norm(double*, double*, int, int, int);

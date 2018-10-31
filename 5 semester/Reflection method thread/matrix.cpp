@@ -110,18 +110,43 @@ Matrix Matrix::operator*(const Matrix &M) {
 	return prod;
 }
 
-void inverse(double* inv, double* data, int size, int my_rank, int threads, bool fl) {
+void print(int key, int size, double* data) {
+	std::cout.precision(4);
+	if (key > 0 && key < size - 1) {
+
+		for (int i = 0; i < key; i++) {
+			for (int j = 0; j < key; j++)
+				std::cout << data[i*size + j] << "\t";
+			std::cout << "...\t" << data[i*size + size - 1];
+			std::cout << "\n";
+		}
+		for (int j = 0; j < key + 2; j++)
+			std::cout << "...\t";
+		std::cout << "\n";
+		for (int j = 0; j < key; j++)
+			std::cout << data[(size - 1)*size + j] << "\t";
+		std::cout << "...\t" << data[size*size - 1];
+		std::cout << "\n\n";
+	}
+	else {
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++)
+				std::cout << data[i*size + j] << "\t";
+			std::cout << "\n";
+		}
+		std::cout << "\n\n";
+	}
+}
+
+void inverse(double* data, double* inv, int size, int my_rank, int threads, bool fl) {
 	if (my_rank == 0)
 		for (int i = 0; i < size; i++)
 			for (int j = 0; j < size; j++)
 				if (i == j) inv[i * size + j] = 1;
 				else inv[i * size + j] = 0;
-	/*if (fl) {
-		std::cout << "inv:\n";
-		inv.print(5);
-	}*/
-	int first, last;
-	double tmp1, tmp2;
+
+	int first = 0, last = 0;
+	double tmp1, tmp2 = 0;
 	for (int i = 0; i < size - 1; i++)
 	{
 		if (my_rank == 0) {
@@ -138,11 +163,6 @@ void inverse(double* inv, double* data, int size, int my_rank, int threads, bool
 
 			data[i * size + i] -= tmp2; //(14)
 
-			/*if (fl) {
-				std::cout << "1. A:\ni = " << i << "\n";
-				print(5);
-			}*/
-
 			tmp1 = sqrt(tmp1 + data[i * size + i] * data[i * size + i]); //(15)
 
 			/*if (tmp1 < eps)
@@ -155,11 +175,12 @@ void inverse(double* inv, double* data, int size, int my_rank, int threads, bool
 				data[j * size + i] = data[j * size + i] / (double)tmp1; //(16)
 		}
 		synchronize(threads);
-
-		//if (fl) {
-		//	std::cout << "2. A:\ni = " << i << "\n";
-		//	print(5);
-		//}
+		if (fl) {
+			std::cout << "inv:\n";
+			print(5, size, inv);
+			std::cout << my_rank << " A:\n";
+			print(5, size, data);
+		}
 
 		first = (size - i - 1) * my_rank / threads + i + 1;
 		//first = first / threads + i + 1;
@@ -178,10 +199,12 @@ void inverse(double* inv, double* data, int size, int my_rank, int threads, bool
 		}
 		synchronize(threads);
 
-		/*if (fl) {
-			std::cout << "3. A:\ni = " << i << "\n";
-			print(5);
-		}*/
+		if (fl) {
+			std::cout << "inv:\n";
+			print(5, size, inv);
+			std::cout << my_rank << " A:\n";
+			print(5, size, data);
+		}
 
 		first = size * my_rank / threads;
 		last = size * (my_rank + 1) / threads;
@@ -197,38 +220,36 @@ void inverse(double* inv, double* data, int size, int my_rank, int threads, bool
 				inv[k * size + j] -= tmp1 * data[j * size + i];
 		}
 		synchronize(threads);
-		/*if (fl) {
-			std::cout << "4. inv:\ni = " << i << "\n";
-			inv.print(5);
-		}*/
+		if (fl) {
+			std::cout << "inv:\n";
+			print(5, size, inv);
+			std::cout << my_rank << " A:\n";
+			print(5, size, data);
+		}
+
 		if (my_rank == 0)
 			data[i * size + i] = tmp2; //on diagonal - R
 	}
 
-	/*if (fl) {
-		std::cout << "0. A:\n";
-		print(5);
-		std::cout << "0. inv:\n";
-		inv.print(5);
-	}*/
 
-	for (int i = first; i < last; ++i)
+	for (int i = first; i < last; i++)
 		for (int j = i + 1; j < size; j++)
 		{
 			double tmp1 = inv[i * size + j];
 			inv[i * size + j] = inv[j * size + i];
 			inv[j * size + i] = tmp1;
 		}//Transpose Q
+	synchronize(threads);
 
-	/*if (fl) {
-		std::cout << "A:\n";
-		print(5);
+	if (fl) {
 		std::cout << "inv:\n";
-		inv.print(5);
-	}*/
+		print(5, size, inv);
+		std::cout << my_rank << " A:\n";
+		print(5, size, data);
+	}
 
-	//first = size * my_rank / threads;
-	//last = size * (my_rank + 1) / threads;
+	first = size * my_rank / threads;
+	last = size * (my_rank + 1) / threads;
 
 	for (int k = first; k < last; k++)
 		for (int i = size - 1; i >= 0; i--)
@@ -239,12 +260,12 @@ void inverse(double* inv, double* data, int size, int my_rank, int threads, bool
 			inv[i * size + k] = tmp1 / data[i * size + i];
 		}//Reverse Gauss
 
-	/*if (fl) {
-		std::cout << "0. A:\n";
-		print(5);
-		std::cout << "0. inv:\n";
-		inv.print(5);
-	}*/
+	if (fl) {
+		std::cout << "inv:\n";
+		print(5, size, inv);
+		std::cout << my_rank+1 << " A:\n";
+		print(5, size, data);
+	}
 
 	return;
 }
@@ -254,6 +275,25 @@ double norm(Matrix A, Matrix inv) {
 	Matrix E = A * inv;
 	for (int i = 0; i < A.size; i++)
 		err += E.data[i*E.size + i] - 1;
+	return err;
+}
+
+double norm(double* data, double* inv, int size, int my_rank, int threads) {
+	double err = 0; 
+	int first_row = size * my_rank;
+	first_row = first_row / threads;
+	int last_row = size * (my_rank + 1);
+	last_row = last_row / threads;
+	double*prod;
+	prod = new double[size*size];
+	for (int i = first_row; i < last_row; i++)
+		for (int j = first_row; j < last_row; j++) {
+			prod[i*size + j] = 0;
+			for (int k = 0; k < size; k++)
+				prod[i*size + j] += data[i*size + k] * inv[k*size + j];
+		}
+	for (int i = first_row; i < last_row; i++)
+		err += prod[i*size + i] - 1;
 	return err;
 }
 

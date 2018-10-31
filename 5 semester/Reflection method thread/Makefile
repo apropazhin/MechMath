@@ -1,5 +1,5 @@
 all: main.o getopt.o MyException.o matrix.o thread.o
-	g++ -o run main.o getopt.o MyException.o matrix.o thread.o -O3
+	g++ -o run main.o getopt.o MyException.o matrix.o thread.o -O3 -lpthread
 
 main.o: main.cpp matrix.h
 	g++ -c main.cpp -o main.o -O3
