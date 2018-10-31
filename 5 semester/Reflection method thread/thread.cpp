@@ -11,7 +11,7 @@ void *inv_t(void *pa)
 	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt1);
 	inverse(args->a, args->b, args->size, args->my_rank, args->threads, args->flag);
 	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt2);
-	args->norm = norm(args->a, args->b, args->size, args->my_rank, args->threads);
+	args->norm = norm(args->c, args->b, args->size, args->my_rank, args->threads);
 	pthread_mutex_lock(&mutex);
 	//args->time_t = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
 	pthread_mutex_unlock(&mutex);

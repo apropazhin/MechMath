@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < par.threads; i++) {
 				pa[i].a = B.getData();
 				pa[i].b = C.getData();
+				pa[i].c = A.getData();
 				pa[i].size = A.getSize();
 				pa[i].my_rank = i;
 				pa[i].threads = par.threads;
@@ -76,8 +77,8 @@ int main(int argc, char *argv[]) {
 				std::cout << "Inverse matrix:\n";
 				C.print(par.k);
 			}
-			double err = norm(A, C);
-			std::cout << "Norm of residual: " << err << std::endl;
+			//double err = norm(A, C);
+			//std::cout << "Norm of residual: " << err << std::endl;
 			err = 0;
 			for (int i = 0; i < par.threads; i++) {
 				err += pa[i].norm;

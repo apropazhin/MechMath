@@ -263,7 +263,7 @@ void inverse(double* data, double* inv, int size, int my_rank, int threads, bool
 	if (fl) {
 		std::cout << "inv:\n";
 		print(5, size, inv);
-		std::cout << my_rank+1 << " A:\n";
+		std::cout << my_rank + 1 << " A:\n";
 		print(5, size, data);
 	}
 
@@ -279,21 +279,23 @@ double norm(Matrix A, Matrix inv) {
 }
 
 double norm(double* data, double* inv, int size, int my_rank, int threads) {
-	double err = 0; 
-	int first_row = size * my_rank;
-	first_row = first_row / threads;
-	int last_row = size * (my_rank + 1);
-	last_row = last_row / threads;
-	double*prod;
+	double err = 0, *prod;
+	int first_row = size * my_rank / threads;
+	int last_row = size * (my_rank + 1) / threads;
+
 	prod = new double[size*size];
+
 	for (int i = first_row; i < last_row; i++)
 		for (int j = first_row; j < last_row; j++) {
 			prod[i*size + j] = 0;
 			for (int k = 0; k < size; k++)
 				prod[i*size + j] += data[i*size + k] * inv[k*size + j];
 		}
+	//synchronize(threads);
+
 	for (int i = first_row; i < last_row; i++)
 		err += prod[i*size + i] - 1;
+
 	return err;
 }
 
