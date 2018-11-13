@@ -2,19 +2,25 @@
 #include "matrix.h"
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-double nor = 0;
+
 void *inv_t(void *pa)
 {
 	Threads *args = (Threads*)pa;
 
-	//timespec mt1, mt2;
+	//timespec mt1, mt2, mt3, mt4;
 	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt1);
 	inverse(args->a, args->b, args->size, args->my_rank, args->threads, args->flag);
 	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt2);
+
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt3);
 	args->norm = norm(args->c, args->b, args->size, args->my_rank, args->threads);
+	//clock_gettime(CLOCK_THREAD_CPUTIME_ID, &mt4);
+	
 	pthread_mutex_lock(&mutex);
 	//args->time_t = (1e9*(mt2.tv_sec - mt1.tv_sec) + (mt2.tv_nsec - mt1.tv_nsec)) / 1e9;
+	//args->time_n = (1e9*(mt4.tv_sec - mt3.tv_sec) + (mt4.tv_nsec - mt3.tv_nsec)) / 1e9;
 	pthread_mutex_unlock(&mutex);
+
 	return NULL;
 }
 

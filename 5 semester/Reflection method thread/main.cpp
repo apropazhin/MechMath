@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
 			threads = new pthread_t[par.threads];
 			Threads *pa;
 			pa = new Threads[par.threads];
+			if (!threads && !pa) throw MyException(83, "Can't allocate memory");
 
 			for (int i = 0; i < par.threads; i++) {
 				pa[i].a = B.getData();
@@ -77,9 +78,10 @@ int main(int argc, char *argv[]) {
 				std::cout << "Inverse matrix:\n";
 				C.print(par.k);
 			}
-			//double err = norm(A, C);
-			//std::cout << "Norm of residual: " << err << std::endl;
-			err = 0;
+			double err = 0;
+			/*err = norm(A, C);
+			std::cout << "Norm of residual: " << err << std::endl;
+			err = 0;*/
 			for (int i = 0; i < par.threads; i++) {
 				err += pa[i].norm;
 			}
@@ -87,8 +89,9 @@ int main(int argc, char *argv[]) {
 
 			//std::cout << "Total time: " << tt << " sec" << std::endl;
 			for (int i = 0; i < par.threads; i++) {
-				// std::cout << "Time thread " << i+1 << ": " << pa[i].time_t <<" sec" << std::endl;
+				// std::cout << "Time thread " << i+1 << ": " << pa[i].time_t <<" sec" << " for norm: " << pa[i].time_n <<" sec" << std::endl;
 			}
+			
 			if (threads) delete[] threads;
 			if (pa) delete[] pa;
 		}

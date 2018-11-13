@@ -4,8 +4,11 @@
 #define eps 1e-10
 
 Matrix::Matrix(int _size) {
+	int _s = _size * _size;
+	if (_s / _size != _size) throw MyException(82, "Can't allocate memory");
 	size = _size;
-	data = new double[size*size];
+	data = new double[size*size]; 
+	if (!data) throw MyException(82, "Can't allocate memory");
 }
 
 Matrix::~Matrix() {
@@ -15,8 +18,11 @@ Matrix::~Matrix() {
 }
 
 void Matrix::init(int _size) {
+	int _s = _size * _size;
+	if (_s / _size != _size) throw MyException(82, "Can't allocate memory");
 	size = _size;
 	data = new double[size*size];
+	if (!data) throw MyException(82, "Can't allocate memory");
 }
 
 Matrix::Matrix(const char *name) {
@@ -260,6 +266,7 @@ void inverse(double* data, double* inv, int size, int my_rank, int threads, bool
 			inv[i * size + k] = tmp1 / data[i * size + i];
 		}//Reverse Gauss
 
+	synchronize(threads);
 	if (fl) {
 		std::cout << "inv:\n";
 		print(5, size, inv);
@@ -280,33 +287,33 @@ double norm(Matrix A, Matrix inv) {
 
 double norm(double* data, double* inv, int size, int my_rank, int threads) {
 	double err = 0, *prod;
-	int first_row = size * my_rank / threads;
-	int last_row = size * (my_rank + 1) / threads;
+	int first = size * my_rank / threads;
+	int last = size * (my_rank + 1) / threads;
 
 	prod = new double[size*size];
 
-	for (int i = first_row; i < last_row; i++)
-		for (int j = first_row; j < last_row; j++) {
+	for (int i = first; i < last; i++)
+		for (int j = first; j < last; j++) {
 			prod[i*size + j] = 0;
 			for (int k = 0; k < size; k++)
 				prod[i*size + j] += data[i*size + k] * inv[k*size + j];
 		}
-	//synchronize(threads);
+	synchronize(threads);
 
-	for (int i = first_row; i < last_row; i++)
+	for (int i = first; i < last; i++)
 		err += prod[i*size + i] - 1;
+	delete[] prod;
 
 	return err;
 }
 
 void Matrix::test_1(int size) {
 	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < i; j++) {
-			data[i*size + j] = 0;
+		for (int j = 0; j < i + 1; j++) {
+			data[i*size + j] = size - i;
 		}
-		data[i*size + i] = 1;
 		for (int j = i + 1; j < size; j++) {
-			data[i*size + j] = -1;
+			data[i*size + j] = size - j;
 		}
 	}
 }
